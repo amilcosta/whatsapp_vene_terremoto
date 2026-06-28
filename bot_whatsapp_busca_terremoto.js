@@ -89,6 +89,28 @@ const RELLENO = new Set([
   'puedes','podrias','dar','traeme','y','con','a','tu','su',
 ])
 
+
+// ----------------------------------------------------------------------
+// Bienvenida (Opcion B: saluda la primera vez que cada usuario escribe)
+// ----------------------------------------------------------------------
+const yaSaludados = new Set()   // en memoria: se reinicia si reinicias el bot
+ 
+const MENSAJE_BIENVENIDA =
+  '👋 ¡Hola! Soy el bot de consulta de personas.\n\n' +
+  'Puedes buscar de dos formas:\n' +
+  '• Escribiendo el *nombre* (o parte de él), por ejemplo: María\n' +
+  '• Escribiendo el *número de cédula*, por ejemplo: 12345678\n\n' +
+  'Envíame un nombre o una cédula para empezar.'
+ 
+const SALUDOS = new Set([
+  'hola', 'holaa', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches',
+  'menu', 'ayuda', 'help', 'start', 'inicio', 'hi', 'hey',
+])
+ 
+function esSaludo(texto) {
+  return SALUDOS.has(normalizar(texto))
+}
+
 // ----------------------------------------------------------------------
 // Comprensión de lenguaje natural (reglas + coincidencia difusa)
 // ----------------------------------------------------------------------
@@ -229,7 +251,8 @@ function respuestaPara(texto) {
   const extra = encontrados.length > 5
     ? `\n\n…y ${encontrados.length - 5} mas. Afina tu busqueda.`
     : ''
-  return `Encontre ${encontrados.length} coincidencias:\n\n${tope.map(ficha).join('\n\n')}${extra}`
+  //return `Encontre ${encontrados.length} coincidencias:\n\n${tope.map(ficha).join('\n\n')}${extra}`
+  return `Encontre ${encontrados.length} coincidencias:\n\n${encontrados.map(ficha).join('\n\n')}`
 }
  
 // ----------------------------------------------------------------------
@@ -277,6 +300,12 @@ async function iniciarBot() {
       ''
     if (!texto) return
  
+    if (!yaSaludados.has(jid)) {
+      yaSaludados.add(jid)
+      await sock.sendMessage(jid, { text: MENSAJE_BIENVENIDA })
+      return
+    }
+    
     await sock.sendMessage(jid, { text: respuestaPara(texto) })
   })
 }
